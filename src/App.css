@@ -1,0 +1,19 @@
+.container {
+  background-color: #282c34;
+  display: flex;
+  height: 100vh;
+  flex-direction: row;
+  justify-content: center;
+}
+.content {
+  margin: 10px;
+  display: grid;
+  align-content: start;
+}
+
+.controls {
+  margin: 10px;
+  display: flex;
+  flex-direction: column;
+  align-content: start;
+}

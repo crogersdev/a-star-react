@@ -58,8 +58,8 @@ function App() {
 
   const computeHeuristic = (s, e) => {
     let h_cost = 0;
-    if (s == e) return h_cost;
-    if (s == -1 || e == -1) return -1;
+    if (s === e) return h_cost;
+    if (s === -1 || e === -1) return -1;
     let [startRow, startCol] = offsetToRowCol(s);
     let [endRow, endCol] = offsetToRowCol(e);
     let currentRow = startRow;

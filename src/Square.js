@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import offsetToRowCol from './Convert';
+import React from 'react';
+import { offsetToRowCol } from './Pathfinding';
 import './Square.css';
 
 function Square(props) {

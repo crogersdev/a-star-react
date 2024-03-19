@@ -1,6 +1,9 @@
 import './App.css';
 import Square from './Square.js';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import './Pathfinding.js';
+import { computeHeuristic, computeNeighbors, rowColToOffset } from './Pathfinding.js';
+import toast, { Toaster } from 'react-hot-toast';
 
 function App() {
   const totalSquares = 64;
@@ -16,25 +19,18 @@ function App() {
   const initialSquareState = {
       offset: -1,
       state: 0,
-      g_cost: -1,
-      h_cost: -1,
-      f_cost: 9
+      g_cost: '',
+      h_cost: '',
+      f_cost: '' 
   };
 
   const [squareStates, setSquareStates] = useState(Array(totalSquares).fill(initialSquareState));
   const [walls, setWalls] = useState([]);
   const [start, setStart] = useState([]);
   const [end, setEnd] = useState([]);
+  const [visited, setVisited] = useState([]);
 
-  let g_cost = "";
-  let h_cost = "";
-  let f_cost = g_cost + h_cost;
-
-  useEffect(() => {
-    console.log("walls:", walls);
-    console.log("start is: ", start);
-    console.log("end is: ", end);
-  });
+  const [path, setPath] = useState({"path": [], "cost": 0});
 
   const squareClick = (offset, state) => {
     const nextState = state >= 3 ? 0 : state + 1;
@@ -68,8 +64,38 @@ function App() {
     setSquareStates(newSquareStates);
   };
 
+  const takeAStep = () => {
+    if (start.length !== 1) toast.error("Please select one and only one start tile.");
+    if (end.length !== 1) toast.error("Please select one and only one end tile.");
+
+    if (path.path.length === 0) path.path.push(start[0]);
+
+    let currentSquare = path.path[path.path.length - 1];
+    let tmp = computeNeighbors(currentSquare, walls)
+    let neighbor_offsets = tmp.map(n => (rowColToOffset(n.row, n.col)));
+
+    const newSquareStates = squareStates.map((square, idx) => { 
+      if (neighbor_offsets.includes(idx)) {
+        return { 
+          ...square,
+          state: 10,
+          h_cost: computeHeuristic(idx, end[0]),
+          g_cost: computeHeuristic(start[0], idx),
+          f_cost: computeHeuristic(idx, end[0]) + computeHeuristic(start[0], idx),
+        };
+      }
+
+      return square;
+    });
+
+
+
+    setSquareStates(newSquareStates);
+  };
+
   return (
     <div className="container">
+      <Toaster position="bottom-right" reverseOrder={false} />
     <div className="content" style={{
       gridTemplateColumns: gridTemplateColumnsVal,
       gap: gapVal
@@ -87,12 +113,14 @@ function App() {
       </div>
       <div className="controls">
         <button onClick={() => {
-          console.log("we have a start:", start);
-
+          takeAStep();
         }}
         >take a step</button>
         <button onClick={() => {
           setSquareStates(Array(totalSquares).fill(initialSquareState));
+          setPath({path: [], cost: 0})
+          setStart([]);
+          setEnd([]);
           setWalls([]);
         }}>reset</button>
       </div>

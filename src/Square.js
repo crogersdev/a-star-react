@@ -8,7 +8,9 @@ function Square(props) {
     0: "#212121",
     1: "red",
     2: "green",
-    3: "blue"
+    3: "blue",
+    7: "orange",
+    10: "#a17800"
   }
 
   const [row, col] = offsetToRowCol(props.state.offset);
@@ -28,8 +30,8 @@ function Square(props) {
                   height: `${props.height}px`
                 }}
     >
-        <div className="text-area top-left">{props.state.h_cost}</div>
-        <div className="text-area top-right">{props.state.g_cost}</div>
+        <div className="text-area top-left">{props.state.g_cost}</div>
+        <div className="text-area top-right">{props.state.h_cost}</div>
         <div className="text-area center">{props.state.f_cost}</div>
         <div className="text-area bottom-right">{props.state.offset}</div>
         <div className="text-area bottom-left">{col + ", " + row}</div>

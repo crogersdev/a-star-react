@@ -4,6 +4,10 @@ export const offsetToRowCol = (offset, gridSize=8) => {
     return [row, col];
 };
 
+export const rowColToOffset = (row, col, gridSize=8) => {
+  return col * gridSize + row;
+};
+
 export const computeNeighbors = (offset, walls, gridSize=8) => {
   const [row, col] = offsetToRowCol(offset);
   let neighbors = [];
@@ -14,7 +18,7 @@ export const computeNeighbors = (offset, walls, gridSize=8) => {
       let cc = col + c;
       let rr = row + r;
       if (r === 0 && c === 0) continue;
-      if (walls.includes(offset)) continue;
+      if (walls.includes(rowColToOffset(rr, cc))) continue;
       if ((rr >= 0 && cc >= 0) && (rr < gridSize && cc < gridSize)) {
         neighbors.push({ col: rr, row: cc });
       }
@@ -34,8 +38,11 @@ export const computeHeuristic = (s, e) => {
 
   while(Math.abs(currentRow - endRow) > 0 && Math.abs(currentCol - endCol) > 0) {
     h_cost += 14;
-    currentRow -= 1;
-    currentCol -= 1;
+    if (currentRow > endRow) currentRow -= 1;
+    else currentRow += 1;
+
+    if (currentCol > endCol) currentCol -= 1;
+    else currentCol += 1;
   }
 
   if (currentRow !== endRow) h_cost += 10 * Math.abs(currentRow - endRow);

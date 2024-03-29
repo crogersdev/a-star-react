@@ -1,5 +1,5 @@
 .square {
-  background-color:darkslateblue;
+  background-color: darkslateblue;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -14,7 +14,7 @@
   border: none; /* Hide borders */
   outline: none; /* Hide focus outline */
   background-color: transparent; /* Make background transparent */
-  color: white; 
+  color: white;
   padding: 2px;
 }
 
@@ -23,7 +23,7 @@
   text-align: center;
   width: 100%;
   font-size: large; /* Larger font size for the center text area */
-  font-weight:900;
+  font-weight: 900;
 }
 
 .text-area.top-right {

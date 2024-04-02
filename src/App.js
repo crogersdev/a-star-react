@@ -29,7 +29,7 @@ function App() {
   };
 
   const [squareStates, setSquareStates] = useState(
-    Array(totalSquares).fill(initialSquareState),
+    [...Array(totalSquares)].map((_, idx) => ({...initialSquareState, offset: idx}))
   );
 
   const [walls, setWalls] = useState([]);
@@ -41,12 +41,11 @@ function App() {
   const [path, setPath] = useState({ path: [], cost: 0 });
 
   useEffect(() => {
-    console.log("open", open)
-    let g_costs = []
-    for 
+    const openFCosts = squareStates.filter((s)=> open.includes(s.offset));
+    let bestFCost = {offset: -1, f_cost: -1};
   }, [open])
-  useEffect(() => {console.log("closed", closed)}, [closed])
-  useEffect(() => {console.log("path", path)}, [path])
+//  useEffect(() => {console.log("closed", closed)}, [closed])
+//  useEffect(() => {console.log("path", path)}, [path])
 
   const squareClick = (offset, state) => {
     const nextState = state >= 3 ? 0 : state + 1;
@@ -80,7 +79,7 @@ function App() {
     setSquareStates(newSquareStates);
   };
 
-  const computeNeighborCosts = () => {
+  const takeStep = () => {
     if (start.length !== 1)
       toast.error("Please select one and only one start tile.");
     if (end.length !== 1)
@@ -89,11 +88,20 @@ function App() {
     if (path.path.length === 0) path.path.push(start[0]);
 
     let currentSquare = path.path[path.path.length - 1];
+    
+    let neighborOffsets = computeNeighborCosts(currentSquare);
+    console.log(neighborOffsets);
+    console.log(path);
+    setOpen(neighborOffsets);
+    setClosed([...closed, currentSquare])
+  };
+
+  const computeNeighborCosts = (currentSquare) => {
     let tmp = computeNeighbors(currentSquare, walls);
-    let neighbor_offsets = tmp.map((n) => rowColToOffset(n.row, n.col));
+    let neighborOffsets = tmp.map((n) => rowColToOffset(n.row, n.col));
 
     const newSquareStates = squareStates.map((square, idx) => {
-      if (neighbor_offsets.includes(idx)) {
+      if (neighborOffsets.includes(idx)) {
         return {
           ...square,
           state: 10,
@@ -103,13 +111,13 @@ function App() {
             computeHeuristic(idx, end[0]) + computeHeuristic(start[0], idx),
         };
       }
-
       return square;
     });
 
-    setOpen(neighbor_offsets);
-    setClosed([...closed, currentSquare])
     setSquareStates(newSquareStates);
+    let foo = neighborOffsets.sort((a, b) => a.f_cost - b.f_cost)
+    console.log("returning: ", foo);
+    return neighborOffsets.sort();
   };
 
   return (
@@ -136,7 +144,7 @@ function App() {
       <div className="controls">
         <button
           onClick={() => {
-            computeNeighborCosts();
+            takeStep();
           }}
         >
           take a step

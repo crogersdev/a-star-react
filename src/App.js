@@ -85,23 +85,29 @@ function App() {
     if (end.length !== 1)
       toast.error("Please select one and only one end tile.");
 
-    if (path.path.length === 0) path.path.push(start[0]);
-
-    let currentSquare = path.path[path.path.length - 1];
+    let currentSquare;
+    if (path.path.length === 0) {
+      console.log("starting from scratch!");
+      path.path.push(start[0]);
+      currentSquare = path.path[path.path.length - 1];
+    } else {
+      console.log("ooh boy, i envy you!")
+      currentSquare = open[0];
+    }
     
-    let neighborOffsets = computeNeighborCosts(currentSquare);
-    console.log(neighborOffsets);
-    console.log(path);
-    setOpen(neighborOffsets);
+    let neighborCosts = computeNeighborCosts(currentSquare);
+    setOpen([...open, neighborCosts]);
     setClosed([...closed, currentSquare])
   };
 
   const computeNeighborCosts = (currentSquare) => {
     let tmp = computeNeighbors(currentSquare, walls);
     let neighborOffsets = tmp.map((n) => rowColToOffset(n.row, n.col));
+    let neighborCosts = [];
 
     const newSquareStates = squareStates.map((square, idx) => {
       if (neighborOffsets.includes(idx)) {
+        neighborCosts.push(square);
         return {
           ...square,
           state: 10,
@@ -115,9 +121,7 @@ function App() {
     });
 
     setSquareStates(newSquareStates);
-    let foo = neighborOffsets.sort((a, b) => a.f_cost - b.f_cost)
-    console.log("returning: ", foo);
-    return neighborOffsets.sort();
+    return neighborCosts.sort((a, b) => a.f_cost - b.f_cost);
   };
 
   return (

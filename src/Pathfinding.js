@@ -5,21 +5,24 @@ export const offsetToRowCol = (offset, gridSize = 8) => {
 };
 
 export const rowColToOffset = (row, col, gridSize = 8) => {
-  return col * gridSize + row;
+  return row * gridSize + col;
 };
 
-export const computeNeighbors = (offset, walls, gridSize = 8) => {
-  const [row, col] = offsetToRowCol(offset);
+export const computeNeighbors = (candidateOffset, walls, open, closed, gridSize = 8) => {
+  const [row, col] = offsetToRowCol(candidateOffset);
   let neighbors = [];
 
   for (let r = -1; r < 2; r++) {
     for (let c = -1; c < 2; c++) {
-      let cc = col + c;
-      let rr = row + r;
       if (r === 0 && c === 0) continue;
-      if (walls.includes(rowColToOffset(rr, cc))) continue;
+      const cc = col + c;
+      const rr = row + r;
+      const neighborOffset = rowColToOffset(rr, cc);
+      if (walls.includes(neighborOffset)) continue;
+      if (open.map((o) => o.offset).includes(neighborOffset)) continue;
+      if (closed.map((c) => c.offset).includes(neighborOffset)) continue;
       if (rr >= 0 && cc >= 0 && rr < gridSize && cc < gridSize) {
-        neighbors.push({ col: rr, row: cc });
+        neighbors.push({ col: cc, row: rr });
       }
     }
   }

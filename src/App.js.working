@@ -31,12 +31,9 @@ function App() {
   const initSquareStates = [...Array(totalSquares)].map((_, idx) => ({...initialSquareState, offset: idx}));
   const [squareStates, setSquareStates] = useState(initSquareStates);
 
-  const defaultEnd = -1;
-  const defaultStart = -1;
-
   const [walls, setWalls] = useState([]);
-  const [start, setStart] = useState(defaultStart);
-  const [end, setEnd] = useState(defaultEnd);
+  const [start, setStart] = useState(-1);
+  const [end, setEnd] = useState(-1);
   const [open, setOpen] = useState([]);
   const [closed, setClosed] = useState([]);
 
@@ -47,40 +44,27 @@ function App() {
   useEffect(() => { console.log("path", path) }, [path])
 
   const squareClick = (offset, state) => {
-
-    const availableStates = Array(0, 1, 2, 3).filter(
-      (num) => {
-        if (num === open) return false;
-        if (num === closed) return false;
-      }
-    );
-
-    // 0 = nothing
-    // 1 = end
-    // 2 = start
-    // 3 = wall
     const nextState = state >= 3 ? 0 : state + 1;
-    const computeNextState = () => {
-      if (state >= 3) { 
-        return 0;
-      } 
-      if (state === 0 && )
-    }
-    let prevEnd, prevStart;
 
     switch (nextState) {
       case 1:
-        prevEnd = end;
-        setEnd(offset);
+        setStart((currentStart) => currentStart.filter((s) => s !== offset));
+        setEnd([...end, offset]);
+        setWalls((currentWalls) => currentWalls.filter((w) => w !== offset));
         break;
       case 2:
-        prevStart = start;
-        setStart(offset);
+        setStart([...start, offset]);
+        setEnd((currentEnd) => currentEnd.filter((e) => e !== offset));
+        setWalls((currentWalls) => currentWalls.filter((w) => w !== offset));
         break;
       case 3:
+        setStart((currentStart) => currentStart.filter((s) => s !== offset));
+        setEnd((currentEnd) => currentEnd.filter((e) => e !== offset));
         setWalls([...walls, offset]);
         break;
       default:
+        setStart((currentStart) => currentStart.filter((s) => s !== offset));
+        setEnd((currentEnd) => currentEnd.filter((e) => e !== offset));
         setWalls((currentWalls) => currentWalls.filter((w) => w !== offset));
     }
 
@@ -88,18 +72,7 @@ function App() {
       idx === offset ? { ...square, state: nextState } : square,
     );
 
-    const newSquareStates2 = squareStates.map((square, idx) => {
-      if (idx === prevEnd || idx === prevStart) {
-        return { ...square, state: 0 }
-      } else if (idx === offset) {
-        return {...square, state: nextState } 
-      } else {
-        return square;
-      }
-
-    });
-
-    setSquareStates(newSquareStates2);
+    setSquareStates(newSquareStates);
   };
 
   const takeStep = () => {
@@ -195,8 +168,8 @@ function App() {
             setPath({ path: [], cost: 0 });
             setOpen([]);
             setClosed([]);
-            setStart(defaultStart);
-            setEnd(defaultEnd);
+            setStart([]);
+            setEnd([]);
             setWalls([]);
           }}
         >

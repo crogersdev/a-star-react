@@ -30,9 +30,9 @@ function Square(props) {
         height: `${props.height}px`,
       }}
     >
-      <div className="text-area top-left">{props.state.g_cost}</div>
-      <div className="text-area top-right">{props.state.h_cost}</div>
-      <div className="text-area center">{props.state.f_cost}</div>
+      <div className="text-area top-left">{props.state.gCost < 0 ? "" : props.state.gCost}</div>
+      <div className="text-area top-right">{props.state.hCost < 0 ? "" : props.state.hCost}</div>
+      <div className="text-area center">{props.state.fCost < 0 ? "" : props.state.fCost}</div>
       <div className="text-area bottom-right">{props.state.offset}</div>
       <div className="text-area bottom-left">{col + ", " + row}</div>
     </div>

@@ -47,7 +47,6 @@ function App() {
   useEffect(() => { console.log("path", path) }, [path])
 
   const squareClick = (offset, state) => {
-
     const availableStates = Array(0, 1, 2, 3).filter(
       (num) => {
         if (num === open) return false;
@@ -61,11 +60,30 @@ function App() {
     // 3 = wall
     const nextState = state >= 3 ? 0 : state + 1;
     const computeNextState = () => {
+      // going from wall to not wall
       if (state >= 3) { 
         return 0;
-      } 
-      if (state === 0 && )
-    }
+      } else if (state === 0) {
+        // going from nothing to potentially end, if end is available
+        if (availableStates.includes(1)) {
+          setEnd(offset);
+          return 1;
+        } else if (availableStates.includes(2)) {
+          setStart(offset);
+          return 2;
+        } else {
+          return 3;
+        }
+      } else if (state === 1) {
+        if (availableStates.includes(2)) {
+          setStart(offset);
+          setEnd(-1);
+          return 2;
+        } else {
+          return 3;
+        }
+      }
+    };
     let prevEnd, prevStart;
 
     switch (nextState) {

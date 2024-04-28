@@ -49,8 +49,8 @@ function App() {
   const squareClick = (offset, state) => {
     const availableStates = Array(0, 1, 2, 3).filter(
       (num) => {
-        if (num === open) return false;
-        if (num === closed) return false;
+        squareStates.includes(1) ? false : true;
+        squareStates.includes(2) ? false : true;
       }
     );
 
@@ -102,11 +102,7 @@ function App() {
         setWalls((currentWalls) => currentWalls.filter((w) => w !== offset));
     }
 
-    const newSquareStates = squareStates.map((square, idx) =>
-      idx === offset ? { ...square, state: nextState } : square,
-    );
-
-    const newSquareStates2 = squareStates.map((square, idx) => {
+    const newSquareStates = squareStates.map((square, idx) => {
       if (idx === prevEnd || idx === prevStart) {
         return { ...square, state: 0 }
       } else if (idx === offset) {
@@ -117,7 +113,7 @@ function App() {
 
     });
 
-    setSquareStates(newSquareStates2);
+    setSquareStates(newSquareStates);
   };
 
   const takeStep = () => {

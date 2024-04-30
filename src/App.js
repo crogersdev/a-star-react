@@ -45,63 +45,52 @@ function App() {
   useEffect(() => { console.log("open: ", open) }, [open])
   useEffect(() => { console.log("closed", closed) }, [closed])
   useEffect(() => { console.log("path", path) }, [path])
+  useEffect(() => { console.log("start: ", start ) }, [start]);
 
   const squareClick = (offset, state) => {
-    const availableStates = Array(0, 1, 2, 3).filter(
-      (num) => {
-        squareStates.includes(1) ? false : true;
-        squareStates.includes(2) ? false : true;
-      }
-    );
+    let isEndSelected   = squareStates.filter((state) => { return state.state === 1; }).length === 1 ? true : false;
+    let isStartSelected = squareStates.filter((state) => { return state.state === 2; }).length === 1 ? true : false;
+    let availableStates = Array(0, 1, 2, 3);
+    if (isEndSelected)   availableStates = availableStates.filter((n) => { return n === 1 });
+    if (isStartSelected) availableStates = availableStates.filter((n) => { return n === 2 });
 
     // 0 = nothing
     // 1 = end
     // 2 = start
     // 3 = wall
-    const nextState = state >= 3 ? 0 : state + 1;
-    const computeNextState = () => {
-      // going from wall to not wall
-      if (state >= 3) { 
-        return 0;
-      } else if (state === 0) {
-        // going from nothing to potentially end, if end is available
-        if (availableStates.includes(1)) {
-          setEnd(offset);
-          return 1;
-        } else if (availableStates.includes(2)) {
-          setStart(offset);
-          return 2;
-        } else {
-          return 3;
-        }
-      } else if (state === 1) {
-        if (availableStates.includes(2)) {
-          setStart(offset);
-          setEnd(-1);
-          return 2;
-        } else {
-          return 3;
-        }
-      }
-    };
-    let prevEnd, prevStart;
 
-    switch (nextState) {
-      case 1:
-        prevEnd = end;
+    let nextState = -1;
+    // going from wall to not wall
+    if (state >= 3) { 
+      nextState = 0;
+    } else if (state === 0) {
+      // going from nothing to potentially end, if end is available
+      if (!isEndSelected) {
         setEnd(offset);
-        break;
-      case 2:
-        prevStart = start;
+        nextState = 1;
+      } else if (!isStartSelected) {
         setStart(offset);
-        break;
-      case 3:
-        setWalls([...walls, offset]);
-        break;
-      default:
-        setWalls((currentWalls) => currentWalls.filter((w) => w !== offset));
+        nextState = 2;
+      } else {
+        setWalls(offset)
+        nextState = 3;
+      }
+    } else if (state === 1) {
+      if (!isStartSelected) {
+        setStart(offset);
+        setEnd(-1);
+        nextState = 2;
+      } else {
+        setWalls(offset)
+        nextState = 3;
+      }
+    } else if (state === 2) {
+      setStart(-1);
+      setWalls(offset);
+      nextState = 3;
     }
 
+    let prevEnd, prevStart;
     const newSquareStates = squareStates.map((square, idx) => {
       if (idx === prevEnd || idx === prevStart) {
         return { ...square, state: 0 }
@@ -110,28 +99,25 @@ function App() {
       } else {
         return square;
       }
-
     });
 
     setSquareStates(newSquareStates);
   };
 
   const takeStep = () => {
-    if (start.length !== 1)
+    if (start === defaultStart || end === defaultEnd)
       toast.error("Please select one and only one start tile.");
-    if (end.length !== 1)
-      toast.error("Please select one and only one end tile.");
 
     let currentSquare;
     if (open.length === 0) {
-      console.log("starting")
-      currentSquare = start[0]
+      console.log("starting at offset: ", start);
+      currentSquare = start;
     } else {
-      console.log("taking from existing open")
+      console.log("taking from existing open");
       currentSquare = open.pop().offset;
     }
 
-    if (currentSquare.offset === end[0]) {
+    if (currentSquare.offset === end) {
       toast.success("all done!");
       return;
     }
@@ -153,10 +139,10 @@ function App() {
         return {
           ...square,
           state: 10,
-          hCost: computeHeuristic(idx, end[0]),
+          hCost: computeHeuristic(idx, end),
           gCost: computeHeuristic(currentSquare, idx) + squareStates[path.path[path.path.length - 1]].gCost,
           fCost:
-            computeHeuristic(idx, end[0]) + squareStates[path.path[path.path.length - 1]].gCost,
+            computeHeuristic(idx, end) + squareStates[path.path[path.path.length - 1]].gCost,
         };
       }
       return square;

@@ -70,24 +70,30 @@ function App() {
         nextState = 1;
       } else if (!isStartSelected) {
         setStart(offset);
+        setPath(prevPath => ({ ...prevPath, path: [offset] }));
         nextState = 2;
       } else {
         setWalls(offset)
+        setWalls((prevWalls) => ([...prevWalls, offset]));
         nextState = 3;
       }
     } else if (state === 1) {
       if (!isStartSelected) {
         setStart(offset);
+        setPath(prevPath => ({ ...prevPath, path: [offset] }));
         setEnd(-1);
         nextState = 2;
       } else {
-        setWalls(offset)
+        setWalls((prevWalls) => ([...prevWalls, offset]));
         nextState = 3;
       }
     } else if (state === 2) {
       setStart(-1);
-      setWalls(offset);
+      setPath({ path: [], cost: 0 });
+      setWalls((prevWalls) => ([...prevWalls, offset]));
       nextState = 3;
+    } else if (state === 3) {
+      setWalls((prevWalls) => (prevWalls.filter((w) => (w !== offset))));
     }
 
     let prevEnd, prevStart;

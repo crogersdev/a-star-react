@@ -18,7 +18,11 @@ function Square(props) {
     props.squareClick(props.state.offset, props.state.state);
   };
 
-  let borderColor = props.borderColor;
+  let borderColor;
+  props.state.isCurrent === true ? borderColor = "pink" : borderColor = props.borderColor;
+
+  console.log("border color for square ", props.state.offset, " is: ", borderColor)
+
   return (
     <div
       className="square"

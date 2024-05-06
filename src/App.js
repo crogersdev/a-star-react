@@ -26,6 +26,7 @@ function App() {
     gCost: -1,
     hCost: -1,
     fCost: -1,
+    isCurrent: false,
   };
 
   const initSquareStates = [...Array(totalSquares)].map((_, idx) => ({...initialSquareState, offset: idx}));
@@ -42,10 +43,12 @@ function App() {
 
   const [path, setPath] = useState({ path: [], cost: 0 });
 
+  /*
   useEffect(() => { console.log("open: ", open) }, [open])
   useEffect(() => { console.log("closed", closed) }, [closed])
   useEffect(() => { console.log("path", path) }, [path])
   useEffect(() => { console.log("start: ", start ) }, [start]);
+  */
 
   const squareClick = (offset, state) => {
     let isEndSelected   = squareStates.filter((state) => { return state.state === 1; }).length === 1 ? true : false;
@@ -73,8 +76,7 @@ function App() {
         setPath(prevPath => ({ ...prevPath, path: [offset] }));
         nextState = 2;
       } else {
-        setWalls(offset)
-        setWalls((prevWalls) => ([...prevWalls, offset]));
+        setWalls(prevWalls => ([...prevWalls, offset]));
         nextState = 3;
       }
     } else if (state === 1) {
@@ -84,16 +86,16 @@ function App() {
         setEnd(-1);
         nextState = 2;
       } else {
-        setWalls((prevWalls) => ([...prevWalls, offset]));
+        setWalls(prevWalls => ([...prevWalls, offset]));
         nextState = 3;
       }
     } else if (state === 2) {
       setStart(-1);
       setPath({ path: [], cost: 0 });
-      setWalls((prevWalls) => ([...prevWalls, offset]));
+      setWalls(prevWalls => ([...prevWalls, offset]));
       nextState = 3;
     } else if (state === 3) {
-      setWalls((prevWalls) => (prevWalls.filter((w) => (w !== offset))));
+      setWalls(prevWalls => (prevWalls.filter((w) => (w !== offset))));
     }
 
     let prevEnd, prevStart;
@@ -116,10 +118,10 @@ function App() {
 
     let currentSquare;
     if (open.length === 0) {
-      console.log("starting at offset: ", start);
+      //console.log("starting at offset: ", start);
       currentSquare = start;
     } else {
-      console.log("taking from existing open");
+      //console.log("taking from existing open");
       currentSquare = open.pop().offset;
     }
 
@@ -128,20 +130,31 @@ function App() {
       return;
     }
 
-    console.log("working with ", currentSquare)
-   
+    //console.log("working with ", currentSquare)
+    const newSquareStates = squareStates.map((square, idx) => {
+      if (idx === currentSquare) {
+        console.log("the current square is: ", currentSquare);
+        return { ...square, isCurrent: true };
+      } else {
+        return { ...square, isCurrent: false };
+      }
+    });
+
+    console.log("setting new square states: ", newSquareStates)
+    setSquareStates(newSquareStates); 
+
     computeNeighborCosts(currentSquare);
   };
 
   const computeNeighborCosts = (currentSquare) => {
     let tmp = computeNeighbors(currentSquare, walls, open, closed);
     let neighborOffsets = tmp.map((n) => rowColToOffset(n.row, n.col));
-    console.log("neighboroffsets: ", neighborOffsets)
-    console.log("current path so far: ", path)
+    //console.log("neighboroffsets: ", neighborOffsets)
+    //console.log("current path so far: ", path)
 
     const newSquareStates = squareStates.map((square, idx) => {
       if (neighborOffsets.includes(idx)) {
-        console.log("path inside new square states: ", path);
+        //console.log("path inside new square states: ", path);
         return {
           ...square,
           state: 10,
@@ -154,9 +167,9 @@ function App() {
       return square;
     });
 
-    let neighborOffsetsByLowestFCost = newSquareStates.filter((_, idx) => neighborOffsets.includes(idx)).sort((a, b) => b.fCost - a.fCost)
-
     setSquareStates(newSquareStates);
+
+    let neighborOffsetsByLowestFCost = newSquareStates.filter((_, idx) => neighborOffsets.includes(idx)).sort((a, b) => b.fCost - a.fCost)
     setOpen([...open, ...neighborOffsetsByLowestFCost]);
     setClosed([...closed, newSquareStates[currentSquare]])
     setPath(prevPath => {

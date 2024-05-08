@@ -133,45 +133,43 @@ function App() {
     //console.log("working with ", currentSquare)
     const newSquareStates = squareStates.map((square, idx) => {
       if (idx === currentSquare) {
-        console.log("the current square is: ", currentSquare);
         return { ...square, isCurrent: true };
-      } else {
-        return { ...square, isCurrent: false };
+      } 
+      else {
+        //return { ...square, isCurrent: false };
+        return square;
       }
     });
 
-    console.log("setting new square states: ", newSquareStates)
-    setSquareStates(newSquareStates); 
-
-    computeNeighborCosts(currentSquare);
+    computeNeighborCosts(currentSquare, newSquareStates);
   };
 
-  const computeNeighborCosts = (currentSquare) => {
+  const computeNeighborCosts = (currentSquare, newSquareStates) => {
     let tmp = computeNeighbors(currentSquare, walls, open, closed);
     let neighborOffsets = tmp.map((n) => rowColToOffset(n.row, n.col));
     //console.log("neighboroffsets: ", neighborOffsets)
     //console.log("current path so far: ", path)
 
-    const newSquareStates = squareStates.map((square, idx) => {
+    const squareStatesWithCost = newSquareStates.map((square, idx) => {
       if (neighborOffsets.includes(idx)) {
         //console.log("path inside new square states: ", path);
         return {
           ...square,
           state: 10,
           hCost: computeHeuristic(idx, end),
-          gCost: computeHeuristic(currentSquare, idx) + squareStates[path.path[path.path.length - 1]].gCost,
+          gCost: computeHeuristic(currentSquare, idx) + newSquareStates[path.path[path.path.length - 1]].gCost,
           fCost:
-            computeHeuristic(idx, end) + squareStates[path.path[path.path.length - 1]].gCost,
+            computeHeuristic(idx, end) + newSquareStates[path.path[path.path.length - 1]].gCost,
         };
       }
       return square;
     });
 
-    setSquareStates(newSquareStates);
+    setSquareStates(squareStatesWithCost);
 
-    let neighborOffsetsByLowestFCost = newSquareStates.filter((_, idx) => neighborOffsets.includes(idx)).sort((a, b) => b.fCost - a.fCost)
+    let neighborOffsetsByLowestFCost = squareStatesWithCost.filter((_, idx) => neighborOffsets.includes(idx)).sort((a, b) => b.fCost - a.fCost)
     setOpen([...open, ...neighborOffsetsByLowestFCost]);
-    setClosed([...closed, newSquareStates[currentSquare]])
+    setClosed([...closed, squareStatesWithCost[currentSquare]])
     setPath(prevPath => {
       const newPath = [...prevPath.path, currentSquare];
       const newCost = prevPath.cost + currentSquare.gCost;

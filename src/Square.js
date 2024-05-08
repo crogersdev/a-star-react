@@ -19,9 +19,11 @@ function Square(props) {
   };
 
   let borderColor;
-  props.state.isCurrent === true ? borderColor = "pink" : borderColor = props.borderColor;
-
-  console.log("border color for square ", props.state.offset, " is: ", borderColor)
+  if (props.state.isCurrent) {
+     borderColor = "magenta"
+   } else {
+     borderColor = props.borderColor;
+   }
 
   return (
     <div
@@ -29,7 +31,7 @@ function Square(props) {
       onClick={() => squareClick()}
       style={{
         backgroundColor: bgColors[props.state.state],
-        borderColor: borderColor,
+        border: `2px solid ${borderColor}`,
         width: `${props.width}px`,
         height: `${props.height}px`,
       }}

@@ -49,6 +49,7 @@ function App() {
   useEffect(() => { console.log("path", path) }, [path])
   useEffect(() => { console.log("start: ", start ) }, [start]);
   */
+  useEffect(() => { console.log("end: ", end) }, [end]);
 
   const squareClick = (offset, state) => {
     let isEndSelected   = squareStates.filter((state) => { return state.state === 1; }).length === 1 ? true : false;
@@ -118,58 +119,20 @@ function App() {
 
     let currentSquare;
     if (open.length === 0) {
-      //console.log("starting at offset: ", start);
       currentSquare = start;
     } else {
-      //console.log("taking from existing open");
       currentSquare = open.pop().offset;
     }
+
+    console.log("current square is: ", currentSquare, "and end is: ", end)
 
     if (currentSquare.offset === end) {
       toast.success("all done!");
       return;
     }
 
-    //console.log("working with ", currentSquare)
-    const newSquareStates = squareStates.map((square, idx) => {
-      if (idx === currentSquare) {
-        return { ...square, isCurrent: true };
-      } 
-      else {
-        //return { ...square, isCurrent: false };
-        return square;
-      }
-    });
-
-    computeNeighborCosts(currentSquare, newSquareStates);
-  };
-
-  const computeNeighborCosts = (currentSquare, newSquareStates) => {
-    let tmp = computeNeighbors(currentSquare, walls, open, closed);
-    let neighborOffsets = tmp.map((n) => rowColToOffset(n.row, n.col));
-    //console.log("neighboroffsets: ", neighborOffsets)
-    //console.log("current path so far: ", path)
-
-    const squareStatesWithCost = newSquareStates.map((square, idx) => {
-      if (neighborOffsets.includes(idx)) {
-        //console.log("path inside new square states: ", path);
-        let foo = {
-          ...square,
-          state: 10,
-          hCost: computeHeuristic(idx, end),
-          gCost: computeHeuristic(currentSquare, idx) + newSquareStates[path.path[path.path.length - 1]].gCost,
-          fCost:
-            computeHeuristic(idx, end) + newSquareStates[path.path[path.path.length - 1]].gCost,
-        };
-
-        console.log(currentSquare, "fCost: ", foo.fCost);
-        console.log(currentSquare, "gCost: ", foo.gCost);
-        console.log(currentSquare, "hCost: ", foo.hCost);
-
-        return foo;
-      }
-      return square;
-    });
+    let neighborOffsets = computeNeighbors(currentSquare, walls, open, closed).map((n) => rowColToOffset(n.row, n.col));
+    let squareStatesWithCost = computeNeighborCosts(currentSquare, neighborOffsets);
 
     setSquareStates(squareStatesWithCost);
 
@@ -182,6 +145,31 @@ function App() {
       return { path: newPath, cost: newCost };
     });
   };
+
+  const computeNeighborCosts = (currentSquare, neighborOffsets) => (
+    squareStates.map((square, idx) => {
+      if (idx === currentSquare) {
+        square = {...square, isCurrent: true };
+      }
+      else if (neighborOffsets.includes(idx)) {
+        
+        let foo = {
+          ...square,
+          state: 10,
+          hCost: computeHeuristic(idx, end),
+          gCost: computeHeuristic(currentSquare, idx) + squareStates[path.path[path.path.length - 1]].gCost,
+          fCost:
+            computeHeuristic(idx, end) + squareStates[path.path[path.path.length - 1]].gCost,
+        };
+
+        //console.log(currentSquare, "fCost: ", foo.fCost);
+        //console.log(currentSquare, "gCost: ", foo.gCost);
+        //console.log(currentSquare, "hCost: ", foo.hCost);
+
+        return foo;
+      }
+      return square;
+   }));
 
   return (
     <div className="container">

@@ -153,7 +153,7 @@ function App() {
     const squareStatesWithCost = newSquareStates.map((square, idx) => {
       if (neighborOffsets.includes(idx)) {
         //console.log("path inside new square states: ", path);
-        return {
+        let foo = {
           ...square,
           state: 10,
           hCost: computeHeuristic(idx, end),
@@ -161,6 +161,12 @@ function App() {
           fCost:
             computeHeuristic(idx, end) + newSquareStates[path.path[path.path.length - 1]].gCost,
         };
+
+        console.log(currentSquare, "fCost: ", foo.fCost);
+        console.log(currentSquare, "gCost: ", foo.gCost);
+        console.log(currentSquare, "hCost: ", foo.hCost);
+
+        return foo;
       }
       return square;
     });

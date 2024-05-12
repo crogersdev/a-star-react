@@ -99,11 +99,9 @@ function App() {
       setWalls(prevWalls => (prevWalls.filter((w) => (w !== offset))));
     }
 
-    let prevEnd, prevStart;
     const newSquareStates = squareStates.map((square, idx) => {
-      if (idx === prevEnd || idx === prevStart) {
-        return { ...square, state: 0 }
-      } else if (idx === offset) {
+      if (idx === offset) {
+        nextState === 2 ? square = { ...square, gCost: 0 } : square = { ...square, gCost: -1 }
         return {...square, state: nextState } 
       } else {
         return square;
@@ -121,13 +119,15 @@ function App() {
     if (open.length === 0) {
       currentSquare = start;
     } else {
+      console.log(open)
       currentSquare = open.pop().offset;
     }
 
     console.log("current square is: ", currentSquare, "and end is: ", end)
 
-    if (currentSquare.offset === end) {
+    if (currentSquare === end) {
       toast.success("all done!");
+      setOpen(squareStates.filter((s) => (s.offset === end)))
       return;
     }
 

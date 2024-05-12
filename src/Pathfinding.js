@@ -38,16 +38,10 @@ export const computeHeuristic = (s, e) => {
   let currentRow = startRow;
   let currentCol = startCol;
 
-  while (
-    Math.abs(currentRow - endRow) > 0 &&
-    Math.abs(currentCol - endCol) > 0
-  ) {
+  while (Math.abs(currentRow - endRow) > 0 && Math.abs(currentCol - endCol) > 0) {
     h_cost += 14;
-    if (currentRow > endRow) currentRow -= 1;
-    else currentRow += 1;
-
-    if (currentCol > endCol) currentCol -= 1;
-    else currentCol += 1;
+    currentRow > endRow ? currentRow -= 1 : currentRow += 1;
+    currentCol > endCol ? currentCol -= 1 : currentCol += 1;
   }
 
   if (currentRow !== endRow) h_cost += 10 * Math.abs(currentRow - endRow);

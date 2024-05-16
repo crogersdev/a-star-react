@@ -5,8 +5,8 @@ import "./Square.css";
 function Square(props) {
   const bgColors = {
     0: "#212121",
-    1: "red",
-    2: "green",
+    1: "green",
+    2: "red",
     3: "blue",
     7: "orange",
     10: "#a17800",
@@ -20,10 +20,17 @@ function Square(props) {
 
   let borderColor;
   if (props.state.isCurrent) {
-     borderColor = "magenta"
-   } else {
-     borderColor = props.borderColor;
-   }
+    borderColor = "magenta"
+  } else {
+    borderColor = props.borderColor;
+  }
+
+  let fCostText;
+  props.state.fCost > 0 ? fCostText = props.state.fCost : fCostText = "";
+  let gCostText;
+  props.state.gCost > 0 ? gCostText = props.state.gCost : gCostText = "";
+  let hCostText;
+  props.state.hCost > 0 ? hCostText = props.state.hCost : hCostText = "";
 
   return (
     <div
@@ -36,9 +43,9 @@ function Square(props) {
         height: `${props.height}px`,
       }}
     >
-      <div className="text-area top-left">{props.state.gCost < 0 ? "" : props.state.gCost}</div>
-      <div className="text-area top-right">{props.state.hCost < 0 ? "" : props.state.hCost}</div>
-      <div className="text-area center">{props.state.fCost < 0 ? "" : props.state.fCost}</div>
+      <div className="text-area top-left">{gCostText}</div>
+      <div className="text-area top-right">{hCostText}</div>
+      <div className="text-area center">{fCostText}</div>
       <div className="text-area bottom-right">{props.state.offset}</div>
       <div className="text-area bottom-left">{col + ", " + row}</div>
     </div>

@@ -48,8 +48,8 @@ function App() {
   useEffect(() => { console.log("closed", closed) }, [closed])
   useEffect(() => { console.log("path", path) }, [path])
   useEffect(() => { console.log("start: ", start ) }, [start]);
-  */
   useEffect(() => { console.log("end: ", end) }, [end]);
+  */
 
   const squareClick = (offset, state) => {
     let isEndSelected   = squareStates.filter((state) => { return state.state === 1; }).length === 1 ? true : false;
@@ -59,49 +59,18 @@ function App() {
     if (isStartSelected) availableStates = availableStates.filter((n) => { return n === 2 });
 
     // 0 = nothing
-    // 1 = end
-    // 2 = start
+    // 1 = start 
+    // 2 = end
     // 3 = wall
 
     let nextState = -1;
-    // going from wall to not wall
-    if (state >= 3) { 
-      nextState = 0;
-    } else if (state === 0) {
-      // going from nothing to potentially end, if end is available
-      if (!isEndSelected) {
-        setEnd(offset);
-        nextState = 1;
-      } else if (!isStartSelected) {
-        setStart(offset);
-        setPath(prevPath => ({ ...prevPath, path: [offset] }));
-        nextState = 2;
-      } else {
-        setWalls(prevWalls => ([...prevWalls, offset]));
-        nextState = 3;
-      }
-    } else if (state === 1) {
-      if (!isStartSelected) {
-        setStart(offset);
-        setPath(prevPath => ({ ...prevPath, path: [offset] }));
-        setEnd(-1);
-        nextState = 2;
-      } else {
-        setWalls(prevWalls => ([...prevWalls, offset]));
-        nextState = 3;
-      }
-    } else if (state === 2) {
-      setStart(-1);
-      setPath({ path: [], cost: 0 });
-      setWalls(prevWalls => ([...prevWalls, offset]));
-      nextState = 3;
-    } else if (state === 3) {
-      setWalls(prevWalls => (prevWalls.filter((w) => (w !== offset))));
+    if (state === 0) {
+      
     }
-
+ 
     const newSquareStates = squareStates.map((square, idx) => {
       if (idx === offset) {
-        nextState === 2 ? square = { ...square, gCost: 0 } : square = { ...square, gCost: -1 }
+        nextState === 2 ? square = { ...square, gCost: 0, hCost: 0, fCost: 0} : square = { ...square, gCost: -1 }
         return {...square, state: nextState } 
       } else {
         return square;
@@ -112,67 +81,78 @@ function App() {
   };
 
   const takeStep = () => {
-    if (start === defaultStart || end === defaultEnd)
+    if (start === defaultStart || end === defaultEnd) {
       toast.error("Please select one and only one start tile.");
-
-    let currentSquare;
-    if (open.length === 0) {
-      currentSquare = start;
-    } else {
-      console.log(open)
-      currentSquare = open.pop().offset;
+      return;
     }
 
-    console.log("current square is: ", currentSquare, "and end is: ", end)
+    let currentSquareOffset;
+    if (open.length === 0) {
+      currentSquareOffset = start;
+    } else {
+      currentSquareOffset = open.pop().offset;
+    }
 
-    if (currentSquare === end) {
+    if (currentSquareOffset === end) {
       toast.success("all done!");
       setOpen(squareStates.filter((s) => (s.offset === end)))
       return;
     }
 
-    let neighborOffsets = computeNeighbors(currentSquare, walls, open, closed).map((n) => rowColToOffset(n.row, n.col));
-    let squareStatesWithCost = computeNeighborCosts(currentSquare, neighborOffsets);
+    let neighborOffsets = computeNeighbors(currentSquareOffset, walls, open, closed).map((n) => rowColToOffset(n.row, n.col));
+    let squareStatesWithCost = computeNeighborCosts(currentSquareOffset, neighborOffsets);
 
     setSquareStates(squareStatesWithCost);
 
     let neighborOffsetsByLowestFCost = squareStatesWithCost.filter((_, idx) => neighborOffsets.includes(idx)).sort((a, b) => b.fCost - a.fCost)
     setOpen([...open, ...neighborOffsetsByLowestFCost]);
-    setClosed([...closed, squareStatesWithCost[currentSquare]])
+    setClosed([...closed, squareStatesWithCost[currentSquareOffset]])
+    console.log("current square info: ", squareStatesWithCost[currentSquareOffset])
     setPath(prevPath => {
-      const newPath = [...prevPath.path, currentSquare];
-      const newCost = prevPath.cost + currentSquare.gCost;
+      const newPath = [...prevPath.path, currentSquareOffset];
+      const newCost = prevPath.cost + squareStatesWithCost[currentSquareOffset].fCost;
       return { path: newPath, cost: newCost };
     });
   };
 
-  const computeNeighborCosts = (currentSquare, neighborOffsets) => (
-    squareStates.map((square, idx) => {
-      if (idx === currentSquare) {
+  const computeNeighborCosts = (currentSquareOffset, neighborOffsets) => { 
+    console.log("current square  :", currentSquareOffset);
+    return squareStates.map((square, idx) => {
+      if (idx === currentSquareOffset) {
         square = {...square, isCurrent: true };
       }
       else if (neighborOffsets.includes(idx)) {
+       
+        let gCost;
+        path.path.length > 0 ? gCost = squareStates[path.path[path.path.length - 1]].gCost : gCost = 0;
         
+        let bar = computeHeuristic(currentSquareOffset, idx);
+        console.log("current neighbor:", idx, "heuristic between the two:", bar, "cumulative gCost:", gCost)
+        console.log("path: ", path)
+
         let foo = {
           ...square,
           state: 10,
           hCost: computeHeuristic(idx, end),
-          gCost: computeHeuristic(currentSquare, idx) + squareStates[path.path[path.path.length - 1]].gCost,
-          fCost:
-            computeHeuristic(idx, end) + squareStates[path.path[path.path.length - 1]].gCost,
+          gCost: computeHeuristic(currentSquareOffset, idx) + gCost,
+          fCost: computeHeuristic(idx, end) + gCost,
         };
-
-        //console.log(currentSquare, "fCost: ", foo.fCost);
-        //console.log(currentSquare, "gCost: ", foo.gCost);
-        //console.log(currentSquare, "hCost: ", foo.hCost);
 
         return foo;
       }
       return square;
-   }));
+   })};
 
   return (
     <div className="container">
+      <div className="sampleSquare">
+        <div className="text-area top-left">g</div>
+        <div className="text-area top-right">h</div>
+        <div className="text-area center">f</div>
+        <div className="text-area bottom-right">offset</div>
+        <div className="text-area bottom-left">col, row</div>
+      </div>
+
       <Toaster position="bottom-right" reverseOrder={false} />
       <div
         className="content"

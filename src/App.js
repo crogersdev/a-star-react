@@ -43,20 +43,23 @@ function App() {
 
   const [path, setPath] = useState({ path: [], cost: 0 });
 
-  /*
+  /* 
   useEffect(() => { console.log("open: ", open) }, [open])
   useEffect(() => { console.log("closed", closed) }, [closed])
+ 
   useEffect(() => { console.log("path", path) }, [path])
+  useEffect(() => { console.log("squareStates", squareStates)}, [squareStates])
+  
   useEffect(() => { console.log("start: ", start ) }, [start]);
   useEffect(() => { console.log("end: ", end) }, [end]);
   */
 
   const squareClick = (offset, state) => {
-    let isEndSelected   = squareStates.filter((state) => { return state.state === 1; }).length === 1 ? true : false;
-    let isStartSelected = squareStates.filter((state) => { return state.state === 2; }).length === 1 ? true : false;
     let availableStates = Array(0, 1, 2, 3);
-    if (isEndSelected)   availableStates = availableStates.filter((n) => { return n === 1 });
-    if (isStartSelected) availableStates = availableStates.filter((n) => { return n === 2 });
+    let isStartSelected = squareStates.filter((state) => { return state.state === 1; }).length === 1 ? true : false;
+    let isEndSelected   = squareStates.filter((state) => { return state.state === 2; }).length === 1 ? true : false;
+    if (isStartSelected) availableStates = availableStates.filter((n) => { return n === 1 });
+    if (isEndSelected)   availableStates = availableStates.filter((n) => { return n === 2 });
 
     // 0 = nothing
     // 1 = start 
@@ -65,12 +68,40 @@ function App() {
 
     let nextState = -1;
     if (state === 0) {
-      
+      if (!isStartSelected) {
+        nextState = 1;
+        setStart(offset);
+      } else if (!isEndSelected) {
+        nextState = 2;
+        setEnd(offset);
+      } else {
+        nextState = 3;
+        setWalls(prevWalls => ([...prevWalls, offset]));
+      }
+    } else if (state === 1) {
+      setStart(-1);
+      if (!isEndSelected) {
+        nextState = 2;
+        setEnd(offset);
+      } else {
+        nextState = 3;
+        setWalls(prevWalls => ([...prevWalls, offset]));
+      }
+    } else if (state === 2) {
+      setEnd(-1)
+      nextState = 3;
+      setWalls(prevWalls => ([...prevWalls, offset]));
+    } else if (state === 3) {
+      nextState = 0;
+      setWalls(prevWalls => (prevWalls.filter(w => w !== offset)))
+    } else {
+        nextState = 3;
+        setWalls(prevWalls => ([...prevWalls, offset]));
     }
  
     const newSquareStates = squareStates.map((square, idx) => {
       if (idx === offset) {
-        nextState === 2 ? square = { ...square, gCost: 0, hCost: 0, fCost: 0} : square = { ...square, gCost: -1 }
+        nextState === 1 ? square = { ...square, gCost: 0, hCost: 0, fCost: 0} : square = { ...square, gCost: -1 }
         return {...square, state: nextState } 
       } else {
         return square;
@@ -105,9 +136,14 @@ function App() {
     setSquareStates(squareStatesWithCost);
 
     let neighborOffsetsByLowestFCost = squareStatesWithCost.filter((_, idx) => neighborOffsets.includes(idx)).sort((a, b) => b.fCost - a.fCost)
+
+    // this will find the absolute lowest cost but you have to amend your path
+    setOpen([...open, ...neighborOffsetsByLowestFCost].sort((a, b) => b.fCost - a.fCost));
+
+    // this will find the lowest cost relative to where you currently are.  greedy, but not
+    // but not intelligent, and you don't have to revisit your path
     setOpen([...open, ...neighborOffsetsByLowestFCost]);
     setClosed([...closed, squareStatesWithCost[currentSquareOffset]])
-    console.log("current square info: ", squareStatesWithCost[currentSquareOffset])
     setPath(prevPath => {
       const newPath = [...prevPath.path, currentSquareOffset];
       const newCost = prevPath.cost + squareStatesWithCost[currentSquareOffset].fCost;
@@ -116,26 +152,28 @@ function App() {
   };
 
   const computeNeighborCosts = (currentSquareOffset, neighborOffsets) => { 
-    console.log("current square  :", currentSquareOffset);
     return squareStates.map((square, idx) => {
       if (idx === currentSquareOffset) {
         square = {...square, isCurrent: true };
       }
+      else if (neighborOffsets.includes(end)) {
+        return square; 
+      }
       else if (neighborOffsets.includes(idx)) {
-       
-        let gCost;
-        path.path.length > 0 ? gCost = squareStates[path.path[path.path.length - 1]].gCost : gCost = 0;
+        //let currentSquareGCost;
+        //path.path.length > 0 ? currentSquareGCost = squareStates[path.path[path.path.length - 1]].gCost : currentSquareGCost = 0;
         
-        let bar = computeHeuristic(currentSquareOffset, idx);
-        console.log("current neighbor:", idx, "heuristic between the two:", bar, "cumulative gCost:", gCost)
-        console.log("path: ", path)
+        let newHCost = computeHeuristic(idx, end);
+        // note: gcost is the cost from the neighbor back to the current square but also including the current square's cost
+        let newGCost = computeHeuristic(currentSquareOffset, idx) + squareStates[currentSquareOffset].gCost;
+        let newFCost = newGCost + newHCost;
 
         let foo = {
           ...square,
           state: 10,
-          hCost: computeHeuristic(idx, end),
-          gCost: computeHeuristic(currentSquareOffset, idx) + gCost,
-          fCost: computeHeuristic(idx, end) + gCost,
+          hCost: newHCost,
+          gCost: newGCost,
+          fCost: newFCost,
         };
 
         return foo;

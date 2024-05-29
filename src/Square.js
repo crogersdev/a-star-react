@@ -4,12 +4,11 @@ import "./Square.css";
 
 function Square(props) {
   const bgColors = {
-    0: "#212121",
-    1: "green",
-    2: "red",
-    3: "blue",
-    7: "orange",
-    10: "#a17800",
+    0: "#212121",     // empty; nothing
+    1: "green",       // start
+    2: "red",         // end
+    3: "blue",        // wall
+    10: "goldenrod",  // neighbor
   };
 
   const [row, col] = offsetToRowCol(props.state.offset);
@@ -18,11 +17,13 @@ function Square(props) {
     props.squareClick(props.state.offset, props.state.state);
   };
 
-  let borderColor;
+  let borderColor, borderWidth;
   if (props.state.isCurrent) {
-    borderColor = "magenta"
+    borderColor = "magenta";
+    borderWidth = "5px";
   } else {
     borderColor = props.borderColor;
+    borderWidth = "2px";
   }
 
   let fCostText;
@@ -38,7 +39,7 @@ function Square(props) {
       onClick={() => squareClick()}
       style={{
         backgroundColor: bgColors[props.state.state],
-        border: `2px solid ${borderColor}`,
+        border: `${borderWidth} solid ${borderColor}`,
         width: `${props.width}px`,
         height: `${props.height}px`,
       }}

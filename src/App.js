@@ -47,7 +47,9 @@ function App() {
   useEffect(() => { console.log("open: ", open) }, [open])
   useEffect(() => { console.log("closed", closed) }, [closed])
  
+  */
   useEffect(() => { console.log("path", path) }, [path])
+  /*
   useEffect(() => { console.log("squareStates", squareStates)}, [squareStates])
   
   useEffect(() => { console.log("start: ", start ) }, [start]);
@@ -55,7 +57,7 @@ function App() {
   */
 
   const squareClick = (offset, state) => {
-    let availableStates = Array(0, 1, 2, 3);
+    let availableStates = [0, 1, 2, 3];
     let isStartSelected = squareStates.filter((state) => { return state.state === 1; }).length === 1 ? true : false;
     let isEndSelected   = squareStates.filter((state) => { return state.state === 2; }).length === 1 ? true : false;
     if (isStartSelected) availableStates = availableStates.filter((n) => { return n === 1 });
@@ -126,7 +128,11 @@ function App() {
 
     if (currentSquareOffset === end) {
       toast.success("all done!");
-      setOpen(squareStates.filter((s) => (s.offset === end)))
+      setPath(prevPath => {
+        const newPath = [...prevPath.path, currentSquareOffset]
+        return { ...prevPath, path: newPath }
+      });
+      setOpen(squareStates.filter((s) => (s.offset === end)));
       return;
     }
 
@@ -140,7 +146,7 @@ function App() {
     // this will find the absolute lowest cost but you have to amend your path
     setOpen([...open, ...neighborOffsetsByLowestFCost].sort((a, b) => b.fCost - a.fCost));
 
-    // this will find the lowest cost relative to where you currently are.  greedy, but not
+    // this will find the lowest cost relative to where you 
     // but not intelligent, and you don't have to revisit your path
     setOpen([...open, ...neighborOffsetsByLowestFCost]);
     setClosed([...closed, squareStatesWithCost[currentSquareOffset]])
@@ -156,7 +162,7 @@ function App() {
       if (idx === currentSquareOffset) {
         square = {...square, isCurrent: true };
       }
-      else if (neighborOffsets.includes(end)) {
+      else if (idx === end) {
         return square; 
       }
       else if (neighborOffsets.includes(idx)) {

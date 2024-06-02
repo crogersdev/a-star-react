@@ -40,16 +40,16 @@ function App() {
   const [end, setEnd] = useState(defaultEnd);
   const [open, setOpen] = useState([]);
   const [closed, setClosed] = useState([]);
+  const [cameFrom, setCameFrom] = useState({});
 
   const [path, setPath] = useState({ path: [], cost: 0 });
 
-  /* 
+  useEffect(() => { console.log("came from: ", cameFrom) }, [cameFrom])
+  /*
   useEffect(() => { console.log("open: ", open) }, [open])
   useEffect(() => { console.log("closed", closed) }, [closed])
  
-  */
   useEffect(() => { console.log("path", path) }, [path])
-  /*
   useEffect(() => { console.log("squareStates", squareStates)}, [squareStates])
   
   useEffect(() => { console.log("start: ", start ) }, [start]);
@@ -148,7 +148,8 @@ function App() {
 
     // this will find the lowest cost relative to where you 
     // but not intelligent, and you don't have to revisit your path
-    setOpen([...open, ...neighborOffsetsByLowestFCost]);
+    //setOpen([...open, ...neighborOffsetsByLowestFCost]);
+
     setClosed([...closed, squareStatesWithCost[currentSquareOffset]])
     setPath(prevPath => {
       const newPath = [...prevPath.path, currentSquareOffset];
